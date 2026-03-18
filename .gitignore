@@ -1,0 +1,60 @@
+## ── Secrets & Local Config ───────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+## ── Claude Code local config ─────────────────────────────────────────────────
+.claude/
+
+## ── Internal planning & notes ────────────────────────────────────────────────
+REQUERIMIENTOS_MVP.md
+*.md.md
+"SITAG*.md"
+"Sistema*.md"
+"Soluciones*.md"
+
+## ── Compressed archives ──────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+
+## ── .NET Build Artifacts ─────────────────────────────────────────────────────
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+*.userprefs
+
+## ── Visual Studio ────────────────────────────────────────────────────────────
+.vs/
+*.vsidx
+*.vsuserinfo
+
+## ── Rider / JetBrains ────────────────────────────────────────────────────────
+.idea/
+*.DotSettings.user
+
+## ── VS Code ──────────────────────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+
+## ── NuGet ────────────────────────────────────────────────────────────────────
+*.nupkg
+*.snupkg
+project.lock.json
+packages/
+
+## ── Test Results ─────────────────────────────────────────────────────────────
+TestResults/
+coverage*/
+*.trx
+*.opencover.xml
+
+## ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+## ── Publish ──────────────────────────────────────────────────────────────────
+publish/

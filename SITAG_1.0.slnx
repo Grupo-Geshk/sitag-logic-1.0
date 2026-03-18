@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="SITAG_1.0/src/SITAG.Api/SITAG.Api.csproj" />
+  <Project Path="SITAG_1.0/src/SITAG.Application/SITAG.Application.csproj" />
+  <Project Path="SITAG_1.0/src/SITAG.Domain/SITAG.Domain.csproj" />
+  <Project Path="SITAG_1.0/src/SITAG.Infrastructure/SITAG.Infrastructure.csproj" />
+  <Project Path="SITAG_1.0/tests/SITAG.Application.Tests/SITAG.Application.Tests.csproj" />
+  <Project Path="SITAG_1.0/tests/SITAG.Api.Tests/SITAG.Api.Tests.csproj" />
+</Solution>
