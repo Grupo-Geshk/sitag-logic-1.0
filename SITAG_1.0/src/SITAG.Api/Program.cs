@@ -166,7 +166,9 @@ try
     }
 
     app.UseCors();
-    app.UseHttpsRedirection();
+    // HTTPS redirect only in local development — Railway terminates TLS at the edge
+    if (app.Environment.IsDevelopment())
+        app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseMiddleware<TenantStatusMiddleware>();
     app.UseAuthorization();
