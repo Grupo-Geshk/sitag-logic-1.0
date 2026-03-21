@@ -75,7 +75,7 @@ public sealed class CreateTenantCommandHandler : IRequestHandler<CreateTenantCom
 
         return new TenantDetailDto(
             tenant.Id, tenant.Name, tenant.PrimaryEmail,
-            tenant.Status, tenant.PaidUntil, tenant.Notes,
+            tenant.Status, tenant.Plan, tenant.PaidUntil, tenant.Notes,
             tenant.CreatedAt, UserCount: 1);
     }
 }

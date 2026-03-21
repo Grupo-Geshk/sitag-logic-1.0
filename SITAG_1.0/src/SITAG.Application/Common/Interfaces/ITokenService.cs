@@ -1,11 +1,12 @@
 using SITAG.Domain.Entities;
+using SITAG.Domain.Enums;
 
 namespace SITAG.Application.Common.Interfaces;
 
 public interface ITokenService
 {
-    /// <summary>Generates a signed JWT access token for the given user.</summary>
-    (string Token, DateTimeOffset ExpiresAt) GenerateAccessToken(User user);
+    /// <summary>Generates a signed JWT access token for the given user and tenant plan.</summary>
+    (string Token, DateTimeOffset ExpiresAt) GenerateAccessToken(User user, TenantPlan plan);
 
     /// <summary>
     /// Generates a cryptographically random refresh token.

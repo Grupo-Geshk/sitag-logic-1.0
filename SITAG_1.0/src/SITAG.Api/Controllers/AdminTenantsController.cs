@@ -100,6 +100,21 @@ public sealed class AdminTenantsController : ApiControllerBase
     }
 
     /// <summary>
+    /// Update a tenant's subscription plan.
+    /// </summary>
+    [HttpPut("{id:guid}/plan")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdatePlan(
+        Guid id,
+        [FromBody] UpdateTenantPlanRequest body,
+        CancellationToken ct)
+    {
+        await Sender.Send(new UpdateTenantPlanCommand(id, body.Plan), ct);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Log that the admin manually sent a payment reminder (REQ-TENANT-08).
     /// </summary>
     [HttpPost("{id:guid}/reminder")]
@@ -125,5 +140,7 @@ public sealed record UpdateTenantStatusRequest(
     TenantStatus Status,
     DateTimeOffset? PaidUntil,
     string? Note);
+
+public sealed record UpdateTenantPlanRequest(TenantPlan Plan);
 
 public sealed record LogReminderRequest(string? Note);

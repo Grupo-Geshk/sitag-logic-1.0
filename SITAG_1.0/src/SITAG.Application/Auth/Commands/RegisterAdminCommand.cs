@@ -81,7 +81,8 @@ public sealed class RegisterAdminCommandHandler : IRequestHandler<RegisterAdminC
         _db.RefreshTokens.Add(refreshToken);
         await _db.SaveChangesAsync(ct);
 
-        var (accessToken, accessExpiry) = _tokens.GenerateAccessToken(user);
+        // Admin users always get Corporativo plan (no tenant plan applies)
+        var (accessToken, accessExpiry) = _tokens.GenerateAccessToken(user, Domain.Enums.TenantPlan.Corporativo);
 
         return new AuthTokensDto(accessToken, accessExpiry, rawRefresh, rtExpiry, MustChangePassword: false);
     }

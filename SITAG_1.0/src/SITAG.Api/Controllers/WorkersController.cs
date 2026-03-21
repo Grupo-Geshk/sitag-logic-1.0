@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SITAG.Api.Filters;
 using SITAG.Application.Workers.Commands;
 using SITAG.Application.Workers.Queries;
 using SITAG.Domain.Enums;
@@ -8,6 +9,7 @@ namespace SITAG.Api.Controllers;
 
 [Route("workers")]
 [Authorize]
+[RequiresPlan(TenantPlan.Profesional)]
 public sealed class WorkersController : ApiControllerBase
 {
     [HttpGet]

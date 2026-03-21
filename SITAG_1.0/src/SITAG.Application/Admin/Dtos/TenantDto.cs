@@ -7,6 +7,7 @@ public sealed record TenantDto(
     string Name,
     string PrimaryEmail,
     TenantStatus Status,
+    TenantPlan Plan,
     DateTimeOffset? PaidUntil,
     string? Notes,
     DateTimeOffset CreatedAt);
@@ -16,6 +17,7 @@ public sealed record TenantDetailDto(
     string Name,
     string PrimaryEmail,
     TenantStatus Status,
+    TenantPlan Plan,
     DateTimeOffset? PaidUntil,
     string? Notes,
     DateTimeOffset CreatedAt,

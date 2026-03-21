@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SITAG.Application.Animals.Dtos;
 using SITAG.Application.Common.Interfaces;
+using SITAG.Application.Common.Plans;
 using SITAG.Domain.Entities;
 using SITAG.Domain.Enums;
 
@@ -45,6 +46,15 @@ public sealed class CreateAnimalHandler : IRequestHandler<CreateAnimalCommand, A
     public async Task<AnimalDto> Handle(CreateAnimalCommand r, CancellationToken ct)
     {
         var tid = _user.TenantId;
+
+        // ── Plan limit check ───────────────────────────────────────────────────
+        var plan = await _db.Tenants.Where(t => t.Id == tid).Select(t => t.Plan).FirstAsync(ct);
+        var activeCount = await _db.Animals.CountAsync(
+            a => a.TenantId == tid && a.Status == AnimalStatus.Activo, ct);
+        if (activeCount >= PlanLimits.MaxActiveAnimals(plan))
+            throw new InvalidOperationException(
+                $"Límite de animales activos alcanzado para el plan {plan} ({PlanLimits.MaxActiveAnimals(plan)}). " +
+                "Marque animales como vendidos o muertos para liberar cupo, o actualice su plan.");
 
         // Resolve effective motherId (new field wins over legacy ParentId alias)
         var effectiveMotherId = r.MotherId ?? r.ParentId;
@@ -225,6 +235,15 @@ public sealed class PurchaseAnimalHandler : IRequestHandler<PurchaseAnimalComman
     public async Task<AnimalDto> Handle(PurchaseAnimalCommand r, CancellationToken ct)
     {
         var tid = _user.TenantId;
+
+        var plan = await _db.Tenants.Where(t => t.Id == tid).Select(t => t.Plan).FirstAsync(ct);
+        var activeCount = await _db.Animals.CountAsync(
+            a => a.TenantId == tid && a.Status == AnimalStatus.Activo, ct);
+        if (activeCount >= PlanLimits.MaxActiveAnimals(plan))
+            throw new InvalidOperationException(
+                $"Límite de animales activos alcanzado para el plan {plan} ({PlanLimits.MaxActiveAnimals(plan)}). " +
+                "Marque animales como vendidos o muertos para liberar cupo, o actualice su plan.");
+
         if (await _db.Animals.AnyAsync(a => a.TagNumber == r.TagNumber && a.TenantId == tid, ct))
             throw new InvalidOperationException($"El número de arete '{r.TagNumber}' ya existe.");
 
@@ -390,6 +409,15 @@ public sealed class CreateAnimalEventHandler : IRequestHandler<CreateAnimalEvent
             var o = r.Offspring;
             if (await _db.Animals.AnyAsync(x => x.TagNumber == o.TagNumber && x.TenantId == _user.TenantId, ct))
                 throw new InvalidOperationException($"El número de arete '{o.TagNumber}' ya existe.");
+
+            // Plan limit applies to births too
+            var plan = await _db.Tenants.Where(t => t.Id == _user.TenantId).Select(t => t.Plan).FirstAsync(ct);
+            var activeCount = await _db.Animals.CountAsync(
+                x => x.TenantId == _user.TenantId && x.Status == AnimalStatus.Activo, ct);
+            if (activeCount >= PlanLimits.MaxActiveAnimals(plan))
+                throw new InvalidOperationException(
+                    $"Límite de animales activos alcanzado para el plan {plan} ({PlanLimits.MaxActiveAnimals(plan)}). " +
+                    "Marque animales como vendidos o muertos para liberar cupo, o actualice su plan.");
 
             var offspring = new Animal
             {

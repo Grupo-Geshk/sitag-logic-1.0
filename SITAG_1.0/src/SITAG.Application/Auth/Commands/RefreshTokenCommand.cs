@@ -35,7 +35,12 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         // Rotate: revoke old, issue new
         stored.RevokedAt = DateTimeOffset.UtcNow;
 
-        var (accessToken, accessExpiry)         = _tokens.GenerateAccessToken(stored.User);
+        var plan = await _db.Tenants
+            .Where(t => t.Id == stored.TenantId)
+            .Select(t => t.Plan)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var (accessToken, accessExpiry)         = _tokens.GenerateAccessToken(stored.User, plan);
         var (rawRefresh, hashRefresh, rtExpiry) = _tokens.GenerateRefreshToken();
 
         var newToken = new Domain.Entities.RefreshToken

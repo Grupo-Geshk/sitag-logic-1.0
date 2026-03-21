@@ -20,7 +20,7 @@ public sealed class GetTenantByIdQueryHandler : IRequestHandler<GetTenantByIdQue
             .Where(t => t.Id == req.TenantId)
             .Select(t => new
             {
-                t.Id, t.Name, t.PrimaryEmail, t.Status,
+                t.Id, t.Name, t.PrimaryEmail, t.Status, t.Plan,
                 t.PaidUntil, t.Notes, t.CreatedAt,
                 UserCount = t.Users.Count
             })
@@ -29,7 +29,7 @@ public sealed class GetTenantByIdQueryHandler : IRequestHandler<GetTenantByIdQue
 
         return new TenantDetailDto(
             tenant.Id, tenant.Name, tenant.PrimaryEmail,
-            tenant.Status, tenant.PaidUntil, tenant.Notes,
+            tenant.Status, tenant.Plan, tenant.PaidUntil, tenant.Notes,
             tenant.CreatedAt, tenant.UserCount);
     }
 }

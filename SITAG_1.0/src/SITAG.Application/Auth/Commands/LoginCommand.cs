@@ -37,7 +37,12 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthToke
 
         user.LastLoginAt = DateTimeOffset.UtcNow;
 
-        var (accessToken, accessExpiry)          = _tokens.GenerateAccessToken(user);
+        var plan = await _db.Tenants
+            .Where(t => t.Id == user.TenantId)
+            .Select(t => t.Plan)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        var (accessToken, accessExpiry)          = _tokens.GenerateAccessToken(user, plan);
         var (rawRefresh, hashRefresh, rtExpiry)  = _tokens.GenerateRefreshToken();
 
         var refreshToken = new Domain.Entities.RefreshToken

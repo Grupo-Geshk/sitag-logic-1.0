@@ -8,6 +8,7 @@ public class Tenant : BaseEntity
     public string Name { get; set; } = string.Empty;
     public string PrimaryEmail { get; set; } = string.Empty;
     public TenantStatus Status { get; set; } = TenantStatus.Active;
+    public TenantPlan Plan { get; set; } = TenantPlan.Semilla;
     public DateTimeOffset? PaidUntil { get; set; }
     public string? Notes { get; set; }
 

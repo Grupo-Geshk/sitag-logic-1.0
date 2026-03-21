@@ -37,7 +37,7 @@ public sealed class GetTenantsQueryHandler : IRequestHandler<GetTenantsQuery, Pa
             .Take(req.PageSize)
             .Select(t => new TenantDto(
                 t.Id, t.Name, t.PrimaryEmail,
-                t.Status, t.PaidUntil, t.Notes, t.CreatedAt))
+                t.Status, t.Plan, t.PaidUntil, t.Notes, t.CreatedAt))
             .ToListAsync(ct);
 
         return new PagedResult<TenantDto>(items, total, req.PageNumber, req.PageSize);

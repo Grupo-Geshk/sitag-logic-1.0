@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SITAG.Application.Admin.Dtos;
 using SITAG.Application.Common.Interfaces;
+using SITAG.Application.Common.Plans;
 using SITAG.Domain.Entities;
 using SITAG.Domain.Enums;
 
@@ -39,6 +40,13 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
             ?? throw new KeyNotFoundException($"Tenant {req.TenantId} not found.");
 
         var email = req.Email.ToLowerInvariant();
+
+        var plan = tenant.Plan;
+        var userCount = await _db.Users.CountAsync(u => u.TenantId == req.TenantId && u.DeletedAt == null, ct);
+        if (userCount >= PlanLimits.MaxUsers(plan))
+            throw new InvalidOperationException(
+                $"Límite de usuarios alcanzado para el plan {plan} ({PlanLimits.MaxUsers(plan)}). " +
+                "Actualice su plan para agregar más usuarios.");
 
         if (await _db.Users.AnyAsync(u => u.Email == email, ct))
             throw new InvalidOperationException("A user with this email already exists.");

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SITAG.Application.Common.Interfaces;
+using SITAG.Application.Common.Plans;
 using SITAG.Application.Farms.Dtos;
 using SITAG.Domain.Entities;
 using SITAG.Domain.Enums;
@@ -20,6 +21,14 @@ public sealed class CreateFarmHandler : IRequestHandler<CreateFarmCommand, FarmD
 
     public async Task<FarmDto> Handle(CreateFarmCommand r, CancellationToken ct)
     {
+        var tid = _user.TenantId;
+        var plan = await _db.Tenants.Where(t => t.Id == tid).Select(t => t.Plan).FirstAsync(ct);
+        var farmCount = await _db.Farms.CountAsync(f => f.TenantId == tid, ct);
+        if (farmCount >= PlanLimits.MaxFarms(plan))
+            throw new InvalidOperationException(
+                $"Límite de fincas alcanzado para el plan {plan} ({PlanLimits.MaxFarms(plan)}). " +
+                "Actualice su plan para registrar más fincas.");
+
         var farm = new Farm
         {
             TenantId = _user.TenantId,

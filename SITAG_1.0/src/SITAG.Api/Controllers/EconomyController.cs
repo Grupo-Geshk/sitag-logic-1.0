@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SITAG.Api.Filters;
 using SITAG.Application.Economy.Commands;
 using SITAG.Application.Economy.Queries;
 using SITAG.Domain.Enums;
@@ -9,6 +10,7 @@ namespace SITAG.Api.Controllers;
 
 [Route("economia")]
 [Authorize]
+[RequiresPlan(TenantPlan.Profesional)]
 public sealed class EconomyController : ApiControllerBase
 {
     [HttpGet("categorias")]
