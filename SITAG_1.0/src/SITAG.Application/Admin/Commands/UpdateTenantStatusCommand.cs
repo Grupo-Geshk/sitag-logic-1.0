@@ -48,6 +48,19 @@ public sealed class UpdateTenantStatusCommandHandler : IRequestHandler<UpdateTen
         };
 
         _db.TenantAuditLogs.Add(logEntry);
+
+        // Revoke all active refresh tokens for this tenant when status becomes Delinquent.
+        // Access tokens remain valid up to 15 min (stateless), but users cannot renew them.
+        if (req.Status == TenantStatus.Delinquent && fromStatus != TenantStatus.Delinquent)
+        {
+            var now = DateTimeOffset.UtcNow;
+            var activeTokens = await _db.RefreshTokens
+                .Where(rt => rt.TenantId == req.TenantId && rt.RevokedAt == null)
+                .ToListAsync(ct);
+            foreach (var rt in activeTokens)
+                rt.RevokedAt = now;
+        }
+
         await _db.SaveChangesAsync(ct);
     }
 }

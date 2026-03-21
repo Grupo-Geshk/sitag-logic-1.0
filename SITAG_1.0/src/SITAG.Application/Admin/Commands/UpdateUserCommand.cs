@@ -50,6 +50,6 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
             user.Id, user.TenantId, user.Tenant.Name,
             user.Email, user.FirstName, user.LastName, user.Phone,
             user.Role, user.IsActive, user.MustChangePassword,
-            user.CreatedAt);
+            user.CreatedAt, user.LastLoginAt);
     }
 }

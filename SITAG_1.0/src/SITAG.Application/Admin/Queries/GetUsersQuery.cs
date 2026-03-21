@@ -55,7 +55,7 @@ public sealed class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PagedR
                 u.Id, u.TenantId, u.Tenant.Name,
                 u.Email, u.FirstName, u.LastName, u.Phone,
                 u.Role, u.IsActive, u.MustChangePassword,
-                u.CreatedAt))
+                u.CreatedAt, u.LastLoginAt))
             .ToListAsync(ct);
 
         return new PagedResult<UserDto>(items, total, req.PageNumber, req.PageSize);

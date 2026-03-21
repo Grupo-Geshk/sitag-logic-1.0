@@ -35,6 +35,8 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, AuthToke
         if (!user.IsActive)
             throw new UnauthorizedAccessException("This account has been deactivated.");
 
+        user.LastLoginAt = DateTimeOffset.UtcNow;
+
         var (accessToken, accessExpiry)          = _tokens.GenerateAccessToken(user);
         var (rawRefresh, hashRefresh, rtExpiry)  = _tokens.GenerateRefreshToken();
 

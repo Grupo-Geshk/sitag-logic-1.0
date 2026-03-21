@@ -14,6 +14,7 @@ public class User : TenantEntity
     public string LastName { get; set; } = string.Empty;
     public string? Phone { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
+    public DateTimeOffset? LastLoginAt { get; set; }
 
     public Tenant Tenant { get; set; } = null!;
 }

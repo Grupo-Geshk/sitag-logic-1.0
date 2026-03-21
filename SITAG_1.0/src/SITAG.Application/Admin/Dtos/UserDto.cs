@@ -13,4 +13,5 @@ public sealed record UserDto(
     UserRole Role,
     bool IsActive,
     bool MustChangePassword,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    DateTimeOffset? LastLoginAt);

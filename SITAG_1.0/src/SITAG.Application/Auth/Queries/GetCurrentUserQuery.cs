@@ -21,7 +21,7 @@ public sealed class GetCurrentUserHandler : IRequestHandler<GetCurrentUserQuery,
                 u.Id, u.TenantId, u.Tenant.Name,
                 u.Email, u.FirstName, u.LastName, u.Phone,
                 u.Role, u.IsActive, u.MustChangePassword,
-                u.CreatedAt))
+                u.CreatedAt, u.LastLoginAt))
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException("Current user not found.");
         return u;

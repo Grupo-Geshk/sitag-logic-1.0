@@ -63,6 +63,6 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
             user.Id, user.TenantId, tenant.Name,
             user.Email, user.FirstName, user.LastName, user.Phone,
             user.Role, user.IsActive, user.MustChangePassword,
-            user.CreatedAt);
+            user.CreatedAt, user.LastLoginAt);
     }
 }

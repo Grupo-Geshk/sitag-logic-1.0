@@ -20,7 +20,7 @@ public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, 
                 u.Id, u.TenantId, u.Tenant.Name,
                 u.Email, u.FirstName, u.LastName, u.Phone,
                 u.Role, u.IsActive, u.MustChangePassword,
-                u.CreatedAt))
+                u.CreatedAt, u.LastLoginAt))
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException($"User {req.UserId} not found.");
         return u;
