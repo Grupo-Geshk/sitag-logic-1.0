@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -150,10 +151,11 @@ try
     // ── App pipeline ──────────────────────────────────────────────────────────
     var app = builder.Build();
 
-    // ── Seed bootstrap accounts ───────────────────────────────────────────────
+    // ── Apply pending EF Core migrations + seed bootstrap accounts ───────────
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<SITAG.Infrastructure.Persistence.SitagDbContext>();
+        await db.Database.MigrateAsync();
         await SITAG.Infrastructure.Persistence.DbSeeder.SeedAsync(db);
     }
 
