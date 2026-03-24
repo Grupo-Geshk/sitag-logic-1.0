@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SITAG.Application.Common.Interfaces;
 
 namespace SITAG.Application.Auth.Commands;
@@ -20,16 +19,16 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
 {
     private readonly IApplicationDbContext _db;
     private readonly IEmailService         _email;
-    private readonly IConfiguration        _config;
+    private readonly IAppSettings          _settings;
 
     public ForgotPasswordCommandHandler(
         IApplicationDbContext db,
         IEmailService         email,
-        IConfiguration        config)
+        IAppSettings          settings)
     {
-        _db     = db;
-        _email  = email;
-        _config = config;
+        _db       = db;
+        _email    = email;
+        _settings = settings;
     }
 
     public async Task Handle(ForgotPasswordCommand req, CancellationToken ct)
@@ -50,7 +49,7 @@ public sealed class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswor
         user.PasswordResetTokenExpiresAt = DateTimeOffset.UtcNow.AddHours(1);
         await _db.SaveChangesAsync(ct);
 
-        var frontendUrl = _config["FRONTEND_URL"] ?? "https://sitag.app";
+        var frontendUrl = _settings.FrontendUrl;
         var resetUrl    = $"{frontendUrl}/reset-password?token={rawToken}";
 
         var html = $"""

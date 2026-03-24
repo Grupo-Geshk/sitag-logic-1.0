@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +40,9 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+        // ── App settings (frontend URL, etc.) ────────────────────────────────
+        services.AddSingleton<IAppSettings>(new AppSettings(configuration));
+
         // ── Email service: Resend when API key is set, no-op otherwise ────────
         if (!string.IsNullOrWhiteSpace(configuration["RESEND_API_KEY"]))
         {
@@ -49,6 +53,10 @@ public static class DependencyInjection
         {
             services.AddScoped<IEmailService, NoOpEmailService>();
         }
+
+        // ── MediatR handlers in Infrastructure (e.g. DeleteTenantCommandHandler) ──
+        services.AddMediatR(cfg =>
+            cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
         // ── Background services ───────────────────────────────────────────────
         services.AddHostedService<TenantExpiryService>();

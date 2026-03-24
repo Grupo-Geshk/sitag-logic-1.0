@@ -12,6 +12,7 @@ public static class DependencyInjection
         var assembly = typeof(DependencyInjection).Assembly;
 
         // MediatR: discovers all IRequestHandler<,> in this assembly
+        // Infrastructure assembly is also passed at startup via AddInfrastructure
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(assembly));
 
         // Validation pipeline: runs before every handler
