@@ -115,4 +115,50 @@ public sealed class AuthController : ControllerBase
         await _sender.Send(command, cancellationToken);
         return NoContent();
     }
+
+    /// <summary>
+    /// Change the authenticated user's own email address.
+    /// Requires current password as a security check.
+    /// </summary>
+    [HttpPost("change-email")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> ChangeEmail(
+        [FromBody] ChangeEmailCommand command,
+        CancellationToken cancellationToken)
+    {
+        await _sender.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Request a password-reset email. Always returns 204 to prevent enumeration.
+    /// </summary>
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        await _sender.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Consume a password-reset token and set a new password.
+    /// </summary>
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordCommand command,
+        CancellationToken cancellationToken)
+    {
+        await _sender.Send(command, cancellationToken);
+        return NoContent();
+    }
 }

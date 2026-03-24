@@ -39,6 +39,17 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IPasswordHasher, PasswordHasher>();
 
+        // ── Email service: Resend when API key is set, no-op otherwise ────────
+        if (!string.IsNullOrWhiteSpace(configuration["RESEND_API_KEY"]))
+        {
+            services.AddHttpClient<ResendEmailService>();
+            services.AddScoped<IEmailService, ResendEmailService>();
+        }
+        else
+        {
+            services.AddScoped<IEmailService, NoOpEmailService>();
+        }
+
         // ── Background services ───────────────────────────────────────────────
         services.AddHostedService<TenantExpiryService>();
 

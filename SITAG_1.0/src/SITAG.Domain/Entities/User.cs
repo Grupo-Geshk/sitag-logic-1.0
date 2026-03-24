@@ -16,5 +16,9 @@ public class User : TenantEntity
     public DateTimeOffset? DeletedAt { get; set; }
     public DateTimeOffset? LastLoginAt { get; set; }
 
+    // ── Password reset ────────────────────────────────────────────────────────
+    public string?          PasswordResetTokenHash      { get; set; }
+    public DateTimeOffset?  PasswordResetTokenExpiresAt { get; set; }
+
     public Tenant Tenant { get; set; } = null!;
 }

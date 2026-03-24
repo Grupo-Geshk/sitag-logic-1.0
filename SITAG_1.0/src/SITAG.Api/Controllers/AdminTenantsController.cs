@@ -115,6 +115,30 @@ public sealed class AdminTenantsController : ApiControllerBase
     }
 
     /// <summary>
+    /// Returns a count summary of all data owned by a tenant (for pre-deletion review).
+    /// </summary>
+    [HttpGet("{id:guid}/summary")]
+    [ProducesResponseType(typeof(TenantSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetSummary(Guid id, CancellationToken ct)
+    {
+        var result = await Sender.Send(new GetTenantSummaryQuery(id), ct);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Hard-delete ALL data for a tenant. Irreversible.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        await Sender.Send(new DeleteTenantCommand(id), ct);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Log that the admin manually sent a payment reminder (REQ-TENANT-08).
     /// </summary>
     [HttpPost("{id:guid}/reminder")]
