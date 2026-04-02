@@ -22,6 +22,7 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
         b.Property(a => a.MotherRef).HasMaxLength(200);
         b.Property(a => a.FatherRef).HasMaxLength(200);
         b.Property(a => a.PhotoUrl).HasMaxLength(1000);
+        b.Property(a => a.Color).HasMaxLength(100);
         b.Property(a => a.CreatedAt).IsRequired();
 
         b.HasOne(a => a.Tenant).WithMany()

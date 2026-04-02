@@ -51,7 +51,7 @@ public sealed class AnimalsController : ApiControllerBase
         Ok(await Sender.Send(new UpdateAnimalCommand(
             id, body.Name, body.Breed, body.Sex, body.BirthDate, body.Weight,
             body.FarmId, body.DivisionId,
-            body.PhotoUrl, body.MotherRef, body.FatherRef), ct));
+            body.PhotoUrl, body.MotherRef, body.FatherRef, body.Color), ct));
 
     [HttpPatch("{id:guid}/health")]
     public async Task<IActionResult> UpdateHealth(Guid id, [FromBody] UpdateHealthRequest body, CancellationToken ct) =>
@@ -110,7 +110,8 @@ public sealed record UpdateAnimalRequest(
     Guid FarmId, Guid? DivisionId,
     string? PhotoUrl = null,
     string? MotherRef = null,
-    string? FatherRef = null);
+    string? FatherRef = null,
+    string? Color = null);
 
 public sealed record UpdateHealthRequest(AnimalHealthStatus HealthStatus, string? Notes);
 public sealed record CloseAnimalRequest(AnimalStatus Outcome, string? Reason);

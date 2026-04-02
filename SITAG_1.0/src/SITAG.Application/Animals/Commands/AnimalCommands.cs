@@ -19,7 +19,8 @@ internal static class AnimalMapper
         a.FatherId, a.FatherRef,
         a.PhotoUrl,
         ParentId: a.MotherId,      // backward-compat alias
-        a.CloseReason, a.ClosedAt, a.CreatedAt);
+        a.CloseReason, a.ClosedAt, a.CreatedAt,
+        Color: a.Color);
 }
 
 // ── Create ────────────────────────────────────────────────────────────────────
@@ -35,7 +36,9 @@ public sealed record CreateAnimalCommand(
     // Photo
     string? PhotoUrl = null,
     // Legacy alias — used when the old frontend sends parentId instead of motherId
-    Guid? ParentId = null) : IRequest<AnimalDto>;
+    Guid? ParentId = null,
+    // Color/coat
+    string? Color = null) : IRequest<AnimalDto>;
 
 public sealed class CreateAnimalHandler : IRequestHandler<CreateAnimalCommand, AnimalDto>
 {
@@ -106,6 +109,7 @@ public sealed class CreateAnimalHandler : IRequestHandler<CreateAnimalCommand, A
             FatherId   = r.FatherId,
             FatherRef  = r.FatherRef?.Trim(),
             PhotoUrl   = r.PhotoUrl?.Trim(),
+            Color      = r.Color?.Trim(),
         };
         _db.Animals.Add(animal);
         await _db.SaveChangesAsync(ct);
@@ -123,7 +127,8 @@ public sealed record UpdateAnimalCommand(
     Guid FarmId, Guid? DivisionId,
     string? PhotoUrl = null,
     string? MotherRef = null,
-    string? FatherRef = null) : IRequest<AnimalDto>;
+    string? FatherRef = null,
+    string? Color = null) : IRequest<AnimalDto>;
 
 public sealed class UpdateAnimalHandler : IRequestHandler<UpdateAnimalCommand, AnimalDto>
 {
@@ -147,6 +152,7 @@ public sealed class UpdateAnimalHandler : IRequestHandler<UpdateAnimalCommand, A
         a.PhotoUrl   = r.PhotoUrl?.Trim();
         a.MotherRef  = r.MotherRef?.Trim();
         a.FatherRef  = r.FatherRef?.Trim();
+        a.Color      = r.Color?.Trim();
         await _db.SaveChangesAsync(ct);
         return AnimalMapper.ToDto(a);
     }

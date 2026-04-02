@@ -35,6 +35,10 @@ public class Animal : TenantEntity
     // Mutable: can be updated at any time via PUT /animals/{id}.
     public string? PhotoUrl { get; set; }   // max 1000 chars
 
+    // ── Physical description ───────────────────────────────────────────────────
+    // Free-text color/coat description (e.g. "Negro", "Pinto", "Colorado").
+    public string? Color { get; set; }      // max 100 chars
+
     public DateTimeOffset? ClosedAt { get; set; }
     public string? CloseReason { get; set; }
 
