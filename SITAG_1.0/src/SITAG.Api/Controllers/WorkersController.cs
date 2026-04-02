@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SITAG.Api.Filters;
 using SITAG.Application.Workers.Commands;
+using SITAG.Application.Workers.Dtos;
 using SITAG.Application.Workers.Queries;
 using SITAG.Domain.Enums;
 
@@ -78,6 +79,22 @@ public sealed class WorkersController : ApiControllerBase
         return NoContent();
     }
 
+    // ── Loans ────────────────────────────────────────────────────────────────
+    [HttpGet("{id:guid}/loans")]
+    public async Task<IActionResult> GetLoans(Guid id, CancellationToken ct) =>
+        Ok(await Sender.Send(new GetWorkerLoansQuery(id), ct));
+
+    [HttpPost("{id:guid}/loans")]
+    public async Task<IActionResult> CreateLoan(Guid id, [FromBody] CreateWorkerLoanRequest body, CancellationToken ct)
+    {
+        var result = await Sender.Send(new CreateWorkerLoanCommand(id, body.Amount, body.LoanDate, body.Description), ct);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    [HttpPost("{id:guid}/loans/{loanId:guid}/pay")]
+    public async Task<IActionResult> PayLoan(Guid id, Guid loanId, [FromBody] PayWorkerLoanRequest body, CancellationToken ct) =>
+        Ok(await Sender.Send(new PayWorkerLoanCommand(id, loanId, body.Amount), ct));
+
     // ── Payments ─────────────────────────────────────────────────────────────
     [HttpGet("{id:guid}/payments")]
     public async Task<IActionResult> GetPayments(Guid id, CancellationToken ct) =>
@@ -94,6 +111,8 @@ public sealed class WorkersController : ApiControllerBase
 }
 
 public sealed record UpdateWorkerRequest(string Name, string? RoleLabel, string? Contact);
+public sealed record CreateWorkerLoanRequest(decimal Amount, DateOnly LoanDate, string? Description);
+public sealed record PayWorkerLoanRequest(decimal Amount);
 public sealed record FarmIdsRequest(List<Guid> FarmIds);
 public sealed record CreateWorkerPaymentRequest(
     PaymentMode Mode, DateOnly PaymentDate,

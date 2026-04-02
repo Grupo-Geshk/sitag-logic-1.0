@@ -30,6 +30,7 @@ public interface IApplicationDbContext
     DbSet<Worker> Workers { get; }
     DbSet<WorkerFarmAssignment> WorkerFarmAssignments { get; }
     DbSet<WorkerPayment> WorkerPayments { get; }
+    DbSet<WorkerLoan> WorkerLoans { get; }
 
     // ── Supplies & Inventory ─────────────────────────────────────────────────
     DbSet<Supply> Supplies { get; }

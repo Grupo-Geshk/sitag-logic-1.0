@@ -42,6 +42,25 @@ public class WorkerFarmAssignmentConfiguration : IEntityTypeConfiguration<Worker
     }
 }
 
+public class WorkerLoanConfiguration : IEntityTypeConfiguration<WorkerLoan>
+{
+    public void Configure(EntityTypeBuilder<WorkerLoan> b)
+    {
+        b.ToTable("worker_loans");
+        b.HasKey(l => l.Id);
+
+        b.Property(l => l.Amount).HasPrecision(18, 2).IsRequired();
+        b.Property(l => l.RemainingAmount).HasPrecision(18, 2).IsRequired();
+        b.Property(l => l.Description).HasMaxLength(500);
+        b.Property(l => l.CreatedAt).IsRequired();
+
+        b.HasIndex(l => new { l.WorkerId, l.LoanDate });
+
+        b.HasOne(l => l.Worker).WithMany()
+            .HasForeignKey(l => l.WorkerId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 public class WorkerPaymentConfiguration : IEntityTypeConfiguration<WorkerPayment>
 {
     public void Configure(EntityTypeBuilder<WorkerPayment> b)

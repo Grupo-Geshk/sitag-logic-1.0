@@ -207,6 +207,66 @@ public sealed class CreateWorkerPaymentHandler : IRequestHandler<CreateWorkerPay
     }
 }
 
+// ── Register loan ─────────────────────────────────────────────────────────────
+public sealed record CreateWorkerLoanCommand(
+    Guid WorkerId, decimal Amount, DateOnly LoanDate, string? Description) : IRequest<WorkerLoanDto>;
+
+public sealed class CreateWorkerLoanHandler : IRequestHandler<CreateWorkerLoanCommand, WorkerLoanDto>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentUser _user;
+    public CreateWorkerLoanHandler(IApplicationDbContext db, ICurrentUser user) { _db = db; _user = user; }
+
+    public async Task<WorkerLoanDto> Handle(CreateWorkerLoanCommand r, CancellationToken ct)
+    {
+        var tid = _user.TenantId;
+        var worker = await _db.Workers
+            .FirstOrDefaultAsync(w => w.Id == r.WorkerId && w.TenantId == tid && w.DeletedAt == null, ct)
+            ?? throw new KeyNotFoundException($"Worker {r.WorkerId} not found.");
+
+        var loan = new WorkerLoan
+        {
+            TenantId        = tid,
+            WorkerId        = r.WorkerId,
+            Amount          = Math.Round(r.Amount, 2),
+            RemainingAmount = Math.Round(r.Amount, 2),
+            LoanDate        = r.LoanDate,
+            Description     = r.Description?.Trim(),
+        };
+        _db.WorkerLoans.Add(loan);
+        await _db.SaveChangesAsync(ct);
+
+        return new WorkerLoanDto(loan.Id, loan.WorkerId, loan.Amount, loan.RemainingAmount, loan.LoanDate, loan.Description, loan.CreatedAt);
+    }
+}
+
+// ── Pay loan ──────────────────────────────────────────────────────────────────
+public sealed record PayWorkerLoanCommand(
+    Guid WorkerId, Guid LoanId, decimal Amount) : IRequest<WorkerLoanDto>;
+
+public sealed class PayWorkerLoanHandler : IRequestHandler<PayWorkerLoanCommand, WorkerLoanDto>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentUser _user;
+    public PayWorkerLoanHandler(IApplicationDbContext db, ICurrentUser user) { _db = db; _user = user; }
+
+    public async Task<WorkerLoanDto> Handle(PayWorkerLoanCommand r, CancellationToken ct)
+    {
+        var tid = _user.TenantId;
+        var loan = await _db.WorkerLoans
+            .FirstOrDefaultAsync(l => l.Id == r.LoanId && l.WorkerId == r.WorkerId && l.TenantId == tid, ct)
+            ?? throw new KeyNotFoundException($"Loan {r.LoanId} not found.");
+
+        if (r.Amount <= 0 || r.Amount > loan.RemainingAmount)
+            throw new InvalidOperationException("Payment amount is invalid.");
+
+        loan.RemainingAmount = Math.Round(loan.RemainingAmount - r.Amount, 2);
+        await _db.SaveChangesAsync(ct);
+
+        return new WorkerLoanDto(loan.Id, loan.WorkerId, loan.Amount, loan.RemainingAmount, loan.LoanDate, loan.Description, loan.CreatedAt);
+    }
+}
+
 // ── Soft delete ───────────────────────────────────────────────────────────────
 public sealed record DeleteWorkerCommand(Guid WorkerId) : IRequest;
 

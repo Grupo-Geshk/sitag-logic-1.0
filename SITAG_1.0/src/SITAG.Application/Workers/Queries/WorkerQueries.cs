@@ -184,3 +184,24 @@ public sealed class GetWorkerActivityTimelineHandler
         return new WorkerActivityTimelineDto(r.WorkerId, timeline);
     }
 }
+
+// ── List loans ────────────────────────────────────────────────────────────────
+public sealed record GetWorkerLoansQuery(Guid WorkerId) : IRequest<IReadOnlyList<WorkerLoanDto>>;
+
+public sealed class GetWorkerLoansHandler : IRequestHandler<GetWorkerLoansQuery, IReadOnlyList<WorkerLoanDto>>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentUser _user;
+    public GetWorkerLoansHandler(IApplicationDbContext db, ICurrentUser user) { _db = db; _user = user; }
+
+    public async Task<IReadOnlyList<WorkerLoanDto>> Handle(GetWorkerLoansQuery r, CancellationToken ct)
+    {
+        var tid = _user.TenantId;
+        return await _db.WorkerLoans
+            .AsNoTracking()
+            .Where(l => l.WorkerId == r.WorkerId && l.TenantId == tid)
+            .OrderByDescending(l => l.LoanDate)
+            .Select(l => new WorkerLoanDto(l.Id, l.WorkerId, l.Amount, l.RemainingAmount, l.LoanDate, l.Description, l.CreatedAt))
+            .ToListAsync(ct);
+    }
+}

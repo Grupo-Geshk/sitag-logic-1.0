@@ -43,3 +43,15 @@ public sealed record WorkerAssignmentDto(
     Guid FarmId,
     DateOnly StartDate,
     DateOnly? EndDate);
+
+public sealed record WorkerLoanDto(
+    Guid Id,
+    Guid WorkerId,
+    decimal Amount,
+    decimal RemainingAmount,
+    DateOnly LoanDate,
+    string? Description,
+    DateTimeOffset CreatedAt)
+{
+    public bool IsPaidOff => RemainingAmount <= 0;
+}

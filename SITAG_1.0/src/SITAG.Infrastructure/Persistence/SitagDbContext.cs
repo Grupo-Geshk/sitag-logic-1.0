@@ -29,6 +29,7 @@ public sealed class SitagDbContext : DbContext, IApplicationDbContext
     public DbSet<Worker> Workers => Set<Worker>();
     public DbSet<WorkerFarmAssignment> WorkerFarmAssignments => Set<WorkerFarmAssignment>();
     public DbSet<WorkerPayment> WorkerPayments => Set<WorkerPayment>();
+    public DbSet<WorkerLoan> WorkerLoans => Set<WorkerLoan>();
 
     // ── Supplies / Inventory ──────────────────────────────────────────────────
     public DbSet<Supply> Supplies => Set<Supply>();
