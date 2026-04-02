@@ -394,6 +394,15 @@ public sealed class CreateAnimalEventHandler : IRequestHandler<CreateAnimalEvent
         if (r.EventType == AnimalEventType.RegistroPeso && r.Amount.HasValue && r.Amount > 0)
             a.Weight = r.Amount.Value;
 
+        // Muerte event → mark animal as dead and remove from farm/division
+        if (r.EventType == AnimalEventType.Muerte)
+        {
+            a.Status     = AnimalStatus.Muerto;
+            a.ClosedAt   = DateTimeOffset.UtcNow;
+            a.FarmId     = null;
+            a.DivisionId = null;
+        }
+
         var ev = new AnimalEvent
         {
             TenantId        = _user.TenantId,
@@ -542,13 +551,14 @@ public sealed class DeleteAnimalEventHandler : IRequestHandler<DeleteAnimalEvent
         _db.AnimalEvents.Remove(ev);
         await _db.SaveChangesAsync(ct);
 
-        // Muerte deleted → reactivate animal
+        // Muerte deleted → reactivate animal and restore farm assignment
         if (eventType == AnimalEventType.Muerte)
         {
             animal.Status       = AnimalStatus.Activo;
             animal.HealthStatus = AnimalHealthStatus.Sano;
             animal.CloseReason  = null;
             animal.ClosedAt     = null;
+            animal.FarmId       = ev.FarmId;   // restore the farm recorded at time of death
             await _db.SaveChangesAsync(ct);
         }
 
