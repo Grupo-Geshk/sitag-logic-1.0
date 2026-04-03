@@ -1,3 +1,5 @@
+using SITAG.Domain.Enums;
+
 namespace SITAG.Application.Supplies.Dtos;
 
 public sealed record SupplyDto(
@@ -29,6 +31,19 @@ public sealed record SupplyUsageDto(
     string Unit,
     decimal TotalConsumed,
     int MovementCount);
+
+public sealed record SupplyLotDto(
+    Guid Id,
+    Guid SupplyId,
+    decimal InitialQuantity,
+    decimal CurrentQuantity,
+    decimal? UnitCost,
+    string? Supplier,
+    DateOnly? ExpirationDate,
+    DateOnly PurchaseDate,
+    string Status,
+    string? Notes,
+    DateTimeOffset CreatedAt);
 
 public sealed record ServiceConsumptionDto(
     Guid Id,

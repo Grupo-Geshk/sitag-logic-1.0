@@ -35,6 +35,7 @@ public interface IApplicationDbContext
     // ── Supplies & Inventory ─────────────────────────────────────────────────
     DbSet<Supply> Supplies { get; }
     DbSet<SupplyMovement> SupplyMovements { get; }
+    DbSet<SupplyLot> SupplyLots { get; }
 
     // ── Vet Services ─────────────────────────────────────────────────────────
     DbSet<VetService> VetServices { get; }

@@ -18,6 +18,8 @@ public class SupplyMovement : BaseEntity
     public string? Reason { get; set; }
     public DateTimeOffset MovementDate { get; set; }
     public Guid UserId { get; set; }
+    public Guid? LotId { get; set; }
 
     public Supply Supply { get; set; } = null!;
+    public SupplyLot? Lot { get; set; }
 }

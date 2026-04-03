@@ -63,6 +63,27 @@ public sealed class SuppliesController : ApiControllerBase
     [HttpPost("{id:guid}/ajuste")]
     public async Task<IActionResult> Adjust(Guid id, [FromBody] AdjustStockRequest body, CancellationToken ct) =>
         Ok(await Sender.Send(new AdjustStockCommand(id, body.MovementType, body.Quantity, body.Reason), ct));
+
+    // ── Lots ─────────────────────────────────────────────────────────────────
+
+    [HttpGet("{id:guid}/lotes")]
+    public async Task<IActionResult> GetLots(Guid id, CancellationToken ct) =>
+        Ok(await Sender.Send(new GetSupplyLotsQuery(id), ct));
+
+    [HttpPost("{id:guid}/lotes")]
+    public async Task<IActionResult> CreateLot(Guid id, [FromBody] CreateSupplyLotRequest body, CancellationToken ct)
+    {
+        var result = await Sender.Send(new CreateSupplyLotCommand(
+            id, body.Quantity, body.UnitCost, body.Supplier,
+            body.ExpirationDate, body.PurchaseDate, body.Notes), ct);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    [HttpPut("{id:guid}/lotes/{lotId:guid}")]
+    public async Task<IActionResult> UpdateLot(Guid id, Guid lotId, [FromBody] UpdateSupplyLotRequest body, CancellationToken ct) =>
+        Ok(await Sender.Send(new UpdateSupplyLotCommand(
+            lotId, body.UnitCost, body.Supplier, body.ExpirationDate,
+            body.PurchaseDate, body.Status, body.Notes), ct));
 }
 
 public sealed record UpdateSupplyRequest(
@@ -71,3 +92,19 @@ public sealed record UpdateSupplyRequest(
 
 public sealed record AdjustStockRequest(
     SupplyMovementType MovementType, decimal Quantity, string? Reason);
+
+public sealed record CreateSupplyLotRequest(
+    decimal Quantity,
+    decimal? UnitCost,
+    string? Supplier,
+    DateOnly? ExpirationDate,
+    DateOnly PurchaseDate,
+    string? Notes);
+
+public sealed record UpdateSupplyLotRequest(
+    decimal? UnitCost,
+    string? Supplier,
+    DateOnly? ExpirationDate,
+    DateOnly PurchaseDate,
+    SupplyLotStatus Status,
+    string? Notes);

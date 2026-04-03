@@ -27,7 +27,7 @@ internal static class AnimalMapper
 // ParentId is accepted as a legacy alias for MotherId (frontend backward compat).
 // Both cannot be meaningfully different — if both are provided, MotherId wins.
 public sealed record CreateAnimalCommand(
-    string TagNumber, string? Name, string? Breed, string Sex,
+    string? TagNumber, string? Name, string? Breed, string Sex,
     DateOnly? BirthDate, decimal? Weight,
     Guid FarmId, Guid? DivisionId,
     // Genealogy
@@ -62,8 +62,10 @@ public sealed class CreateAnimalHandler : IRequestHandler<CreateAnimalCommand, A
         // Resolve effective motherId (new field wins over legacy ParentId alias)
         var effectiveMotherId = r.MotherId ?? r.ParentId;
 
-        if (await _db.Animals.AnyAsync(a => a.TagNumber == r.TagNumber && a.TenantId == tid, ct))
-            throw new InvalidOperationException($"El número de arete '{r.TagNumber}' ya existe.");
+        var effectiveTag = string.IsNullOrWhiteSpace(r.TagNumber) ? null : r.TagNumber.Trim();
+        if (effectiveTag != null &&
+            await _db.Animals.AnyAsync(a => a.TagNumber == effectiveTag && a.TenantId == tid, ct))
+            throw new InvalidOperationException($"El número de arete '{effectiveTag}' ya existe.");
 
         // ── Domain validations ─────────────────────────────────────────────────
         if (effectiveMotherId.HasValue)
@@ -96,7 +98,7 @@ public sealed class CreateAnimalHandler : IRequestHandler<CreateAnimalCommand, A
         var animal = new Animal
         {
             TenantId   = tid,
-            TagNumber  = r.TagNumber.Trim(),
+            TagNumber  = effectiveTag,
             Name       = r.Name?.Trim(),
             Breed      = r.Breed?.Trim(),
             Sex        = r.Sex,
@@ -368,7 +370,7 @@ public sealed class MoveAnimalHandler : IRequestHandler<MoveAnimalCommand, Anima
 
 // ── Offspring data for birth events ──────────────────────────────────────────
 public sealed record OffspringData(
-    string TagNumber, string Sex,
+    string? TagNumber, string Sex,
     string? Name, string? Breed, decimal? Weight);
 
 // ── Record animal event (+ atomic EconomyTransaction for Compra/Venta) ───────
@@ -399,7 +401,6 @@ public sealed class CreateAnimalEventHandler : IRequestHandler<CreateAnimalEvent
         {
             a.Status     = AnimalStatus.Muerto;
             a.ClosedAt   = DateTimeOffset.UtcNow;
-            a.FarmId     = null;
             a.DivisionId = null;
         }
 
@@ -422,8 +423,10 @@ public sealed class CreateAnimalEventHandler : IRequestHandler<CreateAnimalEvent
         if (r.EventType == AnimalEventType.Nacimiento && r.Offspring is not null)
         {
             var o = r.Offspring;
-            if (await _db.Animals.AnyAsync(x => x.TagNumber == o.TagNumber && x.TenantId == _user.TenantId, ct))
-                throw new InvalidOperationException($"El número de arete '{o.TagNumber}' ya existe.");
+            var offspringTag = string.IsNullOrWhiteSpace(o.TagNumber) ? null : o.TagNumber.Trim();
+            if (offspringTag != null &&
+                await _db.Animals.AnyAsync(x => x.TagNumber == offspringTag && x.TenantId == _user.TenantId, ct))
+                throw new InvalidOperationException($"El número de arete '{offspringTag}' ya existe.");
 
             // Plan limit applies to births too
             var plan = await _db.Tenants.Where(t => t.Id == _user.TenantId).Select(t => t.Plan).FirstAsync(ct);
@@ -437,7 +440,7 @@ public sealed class CreateAnimalEventHandler : IRequestHandler<CreateAnimalEvent
             var offspring = new Animal
             {
                 TenantId   = _user.TenantId,
-                TagNumber  = o.TagNumber.Trim(),
+                TagNumber  = offspringTag,
                 Name       = o.Name?.Trim(),
                 Breed      = o.Breed?.Trim() ?? a.Breed,
                 Sex        = o.Sex,
@@ -575,5 +578,38 @@ public sealed class DeleteAnimalEventHandler : IRequestHandler<DeleteAnimalEvent
         }
 
         return Unit.Value;
+    }
+}
+
+// ── Assign tag number (only allowed when animal has no tag yet) ───────────────
+public sealed record AssignTagCommand(Guid AnimalId, string TagNumber) : IRequest<AnimalDto>;
+
+public sealed class AssignTagHandler : IRequestHandler<AssignTagCommand, AnimalDto>
+{
+    private readonly IApplicationDbContext _db;
+    private readonly ICurrentUser _user;
+    public AssignTagHandler(IApplicationDbContext db, ICurrentUser user) { _db = db; _user = user; }
+
+    public async Task<AnimalDto> Handle(AssignTagCommand r, CancellationToken ct)
+    {
+        var tid = _user.TenantId;
+        var tag = r.TagNumber.Trim();
+
+        if (string.IsNullOrWhiteSpace(tag))
+            throw new InvalidOperationException("El número de arete no puede estar vacío.");
+
+        var a = await _db.Animals
+            .FirstOrDefaultAsync(x => x.Id == r.AnimalId && x.TenantId == tid, ct)
+            ?? throw new KeyNotFoundException($"Animal {r.AnimalId} no encontrado.");
+
+        if (!string.IsNullOrWhiteSpace(a.TagNumber))
+            throw new InvalidOperationException("Este animal ya tiene un arete asignado. Usa la edición general para modificarlo.");
+
+        if (await _db.Animals.AnyAsync(x => x.TagNumber == tag && x.TenantId == tid, ct))
+            throw new InvalidOperationException($"El número de arete '{tag}' ya existe.");
+
+        a.TagNumber = tag;
+        await _db.SaveChangesAsync(ct);
+        return AnimalMapper.ToDto(a);
     }
 }

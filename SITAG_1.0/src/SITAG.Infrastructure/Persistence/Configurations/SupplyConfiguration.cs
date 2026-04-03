@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SITAG.Domain.Entities;
+using SITAG.Domain.Enums;
 
 namespace SITAG.Infrastructure.Persistence.Configurations;
 
@@ -43,5 +44,31 @@ public class SupplyMovementConfiguration : IEntityTypeConfiguration<SupplyMoveme
 
         b.HasOne(m => m.Supply).WithMany(s => s.Movements)
             .HasForeignKey(m => m.SupplyId).OnDelete(DeleteBehavior.Restrict);
+
+        b.HasOne(m => m.Lot).WithMany(l => l.Movements)
+            .HasForeignKey(m => m.LotId).OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
+    }
+}
+
+public class SupplyLotConfiguration : IEntityTypeConfiguration<SupplyLot>
+{
+    public void Configure(EntityTypeBuilder<SupplyLot> b)
+    {
+        b.ToTable("supply_lots");
+        b.HasKey(l => l.Id);
+
+        b.Property(l => l.InitialQuantity).HasColumnType("numeric(12,3)").IsRequired();
+        b.Property(l => l.CurrentQuantity).HasColumnType("numeric(12,3)").IsRequired();
+        b.Property(l => l.UnitCost).HasColumnType("numeric(14,2)");
+        b.Property(l => l.Supplier).HasMaxLength(255);
+        b.Property(l => l.Notes).HasMaxLength(500);
+        b.Property(l => l.Status)
+            .HasConversion<string>().HasMaxLength(20).IsRequired();
+        b.Property(l => l.PurchaseDate).IsRequired();
+        b.Property(l => l.CreatedAt).IsRequired();
+
+        b.HasOne(l => l.Supply).WithMany()
+            .HasForeignKey(l => l.SupplyId).OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -34,6 +34,7 @@ public sealed class SitagDbContext : DbContext, IApplicationDbContext
     // ── Supplies / Inventory ──────────────────────────────────────────────────
     public DbSet<Supply> Supplies => Set<Supply>();
     public DbSet<SupplyMovement> SupplyMovements => Set<SupplyMovement>();
+    public DbSet<SupplyLot> SupplyLots => Set<SupplyLot>();
 
     // ── Services ─────────────────────────────────────────────────────────────
     public DbSet<VetService> VetServices => Set<VetService>();
