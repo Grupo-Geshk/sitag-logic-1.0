@@ -21,7 +21,7 @@ public sealed record AnimalTimelineEntryDto(
 public sealed record AnimalDto(
     Guid Id,
     Guid TenantId,
-    string TagNumber,
+    string? TagNumber,
     string? Name,
     string? Breed,
     string Sex,
@@ -52,7 +52,7 @@ public sealed record AnimalDto(
 public sealed record AnimalDetailDto(
     Guid Id,
     Guid TenantId,
-    string TagNumber,
+    string? TagNumber,
     string? Name,
     string? Breed,
     string Sex,
@@ -89,7 +89,7 @@ public sealed record AnimalDetailDto(
 // ── Single animal for genealogy tree nodes ───────────────────────────────────
 public sealed record AnimalLineageDto(
     Guid Id,
-    string TagNumber,
+    string? TagNumber,
     string? Name,
     string Sex,
     string? Breed,

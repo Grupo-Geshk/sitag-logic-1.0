@@ -49,7 +49,7 @@ public sealed class GetAnimalsHandler : IRequestHandler<GetAnimalsQuery, PagedRe
         if (!string.IsNullOrWhiteSpace(r.Search))
         {
             var s = r.Search.Trim().ToLower();
-            query = query.Where(a => a.TagNumber.ToLower().Contains(s) ||
+            query = query.Where(a => (a.TagNumber != null && a.TagNumber.ToLower().Contains(s)) ||
                                      (a.Name != null && a.Name.ToLower().Contains(s)));
         }
 
@@ -164,7 +164,7 @@ public sealed class GetAnimalGenealogyHandler : IRequestHandler<GetAnimalGenealo
             ?? throw new KeyNotFoundException($"Animal {r.AnimalId} no encontrado.");
 
         static AnimalLineageDto ToLineage(
-            Guid id, string tag, string? name, string sex,
+            Guid id, string? tag, string? name, string sex,
             string? breed, DateOnly? birth, AnimalStatus status, string? photo) =>
             new(id, tag, name, sex, breed, birth, status, photo);
 

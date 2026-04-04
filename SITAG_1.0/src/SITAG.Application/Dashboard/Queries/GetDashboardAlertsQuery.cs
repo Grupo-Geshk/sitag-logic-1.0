@@ -40,7 +40,9 @@ public sealed class GetDashboardAlertsHandler
         foreach (var a in sickAnimals)
         {
             var severity = a.HealthStatus == AnimalHealthStatus.Critico ? "Alta" : "Media";
-            var label    = string.IsNullOrEmpty(a.Name) ? a.TagNumber : $"{a.TagNumber} ({a.Name})";
+            var label    = string.IsNullOrEmpty(a.Name)
+                ? (a.TagNumber ?? "Sin arete")
+                : $"{a.TagNumber ?? "Sin arete"} ({a.Name})";
             alerts.Add(new DashboardAlertDto(
                 "ANIMAL_SICK", severity,
                 $"Animal {label} está en estado {a.HealthStatus}.",
