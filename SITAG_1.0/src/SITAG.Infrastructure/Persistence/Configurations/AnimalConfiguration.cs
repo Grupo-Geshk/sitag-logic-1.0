@@ -11,10 +11,12 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
         b.ToTable("animals");
         b.HasKey(a => a.Id);
 
-        // TagNumber unique per tenant
-        b.HasIndex(a => new { a.TenantId, a.TagNumber }).IsUnique();
+        // TagNumber unique per tenant — partial index excludes animals without a tag yet
+        b.HasIndex(a => new { a.TenantId, a.TagNumber })
+            .IsUnique()
+            .HasFilter("tag_number IS NOT NULL");
 
-        b.Property(a => a.TagNumber).HasMaxLength(100).IsRequired();
+        b.Property(a => a.TagNumber).HasMaxLength(100).IsRequired(false);
         b.Property(a => a.Sex).HasMaxLength(20).IsRequired();
         b.Property(a => a.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
         b.Property(a => a.HealthStatus).HasConversion<string>().HasMaxLength(30).IsRequired();
@@ -44,6 +46,11 @@ public class AnimalConfiguration : IEntityTypeConfiguration<Animal>
 
         b.HasOne(a => a.Father).WithMany()
             .HasForeignKey(a => a.FatherId)
+            .OnDelete(DeleteBehavior.SetNull)
+            .IsRequired(false);
+
+        b.HasOne(a => a.Brand).WithMany(fb => fb.Animals)
+            .HasForeignKey(a => a.BrandId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
 

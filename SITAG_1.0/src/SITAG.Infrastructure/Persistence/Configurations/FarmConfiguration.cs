@@ -21,6 +21,25 @@ public class FarmConfiguration : IEntityTypeConfiguration<Farm>
     }
 }
 
+public class FarmBrandConfiguration : IEntityTypeConfiguration<FarmBrand>
+{
+    public void Configure(EntityTypeBuilder<FarmBrand> b)
+    {
+        b.ToTable("farm_brands");
+        b.HasKey(fb => fb.Id);
+
+        b.Property(fb => fb.Name).HasMaxLength(255).IsRequired();
+        b.Property(fb => fb.PhotoUrl).HasMaxLength(1000);
+        b.Property(fb => fb.CreatedAt).IsRequired();
+
+        b.HasOne(fb => fb.Farm).WithMany(f => f.Brands)
+            .HasForeignKey(fb => fb.FarmId).OnDelete(DeleteBehavior.Restrict);
+
+        b.HasOne(fb => fb.Tenant).WithMany()
+            .HasForeignKey(fb => fb.TenantId).OnDelete(DeleteBehavior.Restrict);
+    }
+}
+
 public class DivisionConfiguration : IEntityTypeConfiguration<Division>
 {
     public void Configure(EntityTypeBuilder<Division> b)

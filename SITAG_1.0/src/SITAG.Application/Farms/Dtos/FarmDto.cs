@@ -1,5 +1,12 @@
 namespace SITAG.Application.Farms.Dtos;
 
+public sealed record FarmBrandDto(
+    Guid Id,
+    Guid FarmId,
+    string Name,
+    string? PhotoUrl,
+    DateTimeOffset CreatedAt);
+
 public sealed record FarmDto(
     Guid Id,
     Guid TenantId,

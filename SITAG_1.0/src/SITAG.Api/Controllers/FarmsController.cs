@@ -44,6 +44,29 @@ public sealed class FarmsController : ApiControllerBase
         return NoContent();
     }
 
+    // ── Brands (hierros) ─────────────────────────────────────────────────────
+    [HttpGet("{farmId:guid}/hierros")]
+    public async Task<IActionResult> GetBrands(Guid farmId, CancellationToken ct) =>
+        Ok(await Sender.Send(new GetFarmBrandsQuery(farmId), ct));
+
+    [HttpPost("{farmId:guid}/hierros")]
+    public async Task<IActionResult> CreateBrand(Guid farmId, [FromBody] FarmBrandRequest body, CancellationToken ct)
+    {
+        var result = await Sender.Send(new CreateFarmBrandCommand(farmId, body.Name, body.PhotoUrl), ct);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    [HttpPut("{farmId:guid}/hierros/{brandId:guid}")]
+    public async Task<IActionResult> UpdateBrand(Guid farmId, Guid brandId, [FromBody] FarmBrandRequest body, CancellationToken ct) =>
+        Ok(await Sender.Send(new UpdateFarmBrandCommand(brandId, body.Name, body.PhotoUrl), ct));
+
+    [HttpDelete("{farmId:guid}/hierros/{brandId:guid}")]
+    public async Task<IActionResult> DeleteBrand(Guid farmId, Guid brandId, CancellationToken ct)
+    {
+        await Sender.Send(new DeleteFarmBrandCommand(brandId), ct);
+        return NoContent();
+    }
+
     // ── Divisions ────────────────────────────────────────────────────────────
     [HttpGet("{farmId:guid}/divisions")]
     public async Task<IActionResult> GetDivisions(Guid farmId, CancellationToken ct) =>
@@ -73,5 +96,6 @@ public sealed class FarmsController : ApiControllerBase
 }
 
 public sealed record UpdateFarmRequest(string Name, string? Location, decimal? Hectares, string? FarmType, bool IsOwned);
+public sealed record FarmBrandRequest(string Name, string? PhotoUrl);
 public sealed record CreateDivisionRequest(string Name, int? MaxCapacity);
 public sealed record UpdateDivisionRequest(string Name, int? MaxCapacity);

@@ -46,7 +46,10 @@ public sealed record AnimalDto(
     DateTimeOffset CreatedAt,
     string? FarmName = null,
     string? DivisionName = null,
-    string? Color = null);
+    string? Color = null,
+    Guid? BrandId = null,
+    string? BrandName = null,
+    DateTimeOffset? BrandedAt = null);
 
 // ── Animal detail (single animal view) ───────────────────────────────────────
 public sealed record AnimalDetailDto(
@@ -84,7 +87,11 @@ public sealed record AnimalDetailDto(
     // ── Offspring stats ───────────────────────────────────────────────────────
     int OffspringCount,
     DateOnly? LastBirthDate,
-    string? Color = null);
+    string? Color = null,
+    Guid? BrandId = null,
+    string? BrandName = null,
+    string? BrandPhotoUrl = null,
+    DateTimeOffset? BrandedAt = null);
 
 // ── Single animal for genealogy tree nodes ───────────────────────────────────
 public sealed record AnimalLineageDto(

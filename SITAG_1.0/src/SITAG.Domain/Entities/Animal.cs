@@ -5,7 +5,7 @@ namespace SITAG.Domain.Entities;
 
 public class Animal : TenantEntity
 {
-    public string TagNumber { get; set; } = string.Empty;
+    public string? TagNumber { get; set; }
     public string? Name { get; set; }
     public string? Breed { get; set; }
     public string Sex { get; set; } = string.Empty;   // "Hembra" | "Macho"
@@ -39,11 +39,16 @@ public class Animal : TenantEntity
     // Free-text color/coat description (e.g. "Negro", "Pinto", "Colorado").
     public string? Color { get; set; }      // max 100 chars
 
+    // ── Brand (hierro) ────────────────────────────────────────────────────────
+    public Guid? BrandId { get; set; }
+    public DateTimeOffset? BrandedAt { get; set; }
+
     public DateTimeOffset? ClosedAt { get; set; }
     public string? CloseReason { get; set; }
 
     public Tenant Tenant { get; set; } = null!;
     public Farm Farm { get; set; } = null!;
+    public FarmBrand? Brand { get; set; }
     public Division? Division { get; set; }
     public Animal? Mother { get; set; }
     public Animal? Father { get; set; }

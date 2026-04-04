@@ -19,6 +19,7 @@ public sealed class SitagDbContext : DbContext, IApplicationDbContext
     // ── Farms & Divisions ─────────────────────────────────────────────────────
     public DbSet<Farm> Farms => Set<Farm>();
     public DbSet<Division> Divisions => Set<Division>();
+    public DbSet<FarmBrand> FarmBrands => Set<FarmBrand>();
 
     // ── Animals & Trazabilidad ─────────────────────────────────────────────────
     public DbSet<Animal> Animals => Set<Animal>();

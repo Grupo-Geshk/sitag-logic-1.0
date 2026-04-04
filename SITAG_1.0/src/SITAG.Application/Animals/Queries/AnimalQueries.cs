@@ -71,7 +71,10 @@ public sealed class GetAnimalsHandler : IRequestHandler<GetAnimalsQuery, PagedRe
                 a.DivisionId != null
                     ? _db.Divisions.Where(d => d.Id == a.DivisionId).Select(d => d.Name).FirstOrDefault()
                     : null,
-                a.Color))
+                a.Color,
+                a.BrandId,
+                a.BrandId != null ? _db.FarmBrands.Where(b => b.Id == a.BrandId).Select(b => b.Name).FirstOrDefault() : null,
+                a.BrandedAt))
             .ToListAsync(ct);
 
         return new PagedResult<AnimalDto>(items, total, r.PageNumber, r.PageSize);
@@ -132,7 +135,11 @@ public sealed class GetAnimalByIdHandler : IRequestHandler<GetAnimalByIdQuery, A
                     .OrderByDescending(c => c.BirthDate)
                     .Select(c => c.BirthDate)
                     .FirstOrDefault(),
-                a.Color))
+                a.Color,
+                a.BrandId,
+                a.BrandId != null ? _db.FarmBrands.Where(b => b.Id == a.BrandId).Select(b => b.Name).FirstOrDefault() : null,
+                a.BrandId != null ? _db.FarmBrands.Where(b => b.Id == a.BrandId).Select(b => b.PhotoUrl).FirstOrDefault() : null,
+                a.BrandedAt))
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException($"Animal {r.AnimalId} no encontrado.");
         return a;

@@ -4,6 +4,7 @@ using SITAG.Application.Animals.Commands;
 using SITAG.Application.Animals.Dtos;
 using SITAG.Application.Animals.Queries;
 using SITAG.Application.Common.Dtos;
+using SITAG.Application.Farms.Commands;
 using SITAG.Domain.Enums;
 
 namespace SITAG.Api.Controllers;
@@ -61,6 +62,10 @@ public sealed class AnimalsController : ApiControllerBase
     public async Task<IActionResult> Close(Guid id, [FromBody] CloseAnimalRequest body, CancellationToken ct) =>
         Ok(await Sender.Send(new CloseAnimalCommand(id, body.Outcome, body.Reason), ct));
 
+    [HttpPatch("{id:guid}/tag")]
+    public async Task<IActionResult> AssignTag(Guid id, [FromBody] AssignTagRequest body, CancellationToken ct) =>
+        Ok(await Sender.Send(new AssignTagCommand(id, body.TagNumber), ct));
+
     [HttpPost("bulk-movement")]
     public async Task<IActionResult> BulkMove([FromBody] BulkMoveAnimalsCommand cmd, CancellationToken ct)
     {
@@ -100,6 +105,14 @@ public sealed class AnimalsController : ApiControllerBase
     [HttpGet("{id:guid}/movements")]
     public async Task<IActionResult> GetMovements(Guid id, CancellationToken ct) =>
         Ok(await Sender.Send(new GetAnimalMovementsQuery(id), ct));
+
+    // ── Brand ────────────────────────────────────────────────────────────────
+    [HttpPatch("{id:guid}/brand")]
+    public async Task<IActionResult> AssignBrand(Guid id, [FromBody] AssignBrandRequest body, CancellationToken ct)
+    {
+        await Sender.Send(new AssignAnimalBrandCommand(id, body.BrandId, body.BrandedAt), ct);
+        return NoContent();
+    }
 }
 
 // ── Request body records ──────────────────────────────────────────────────────
@@ -115,6 +128,7 @@ public sealed record UpdateAnimalRequest(
 
 public sealed record UpdateHealthRequest(AnimalHealthStatus HealthStatus, string? Notes);
 public sealed record CloseAnimalRequest(AnimalStatus Outcome, string? Reason);
+public sealed record AssignTagRequest(string TagNumber);
 
 public sealed record CreateEventRequest(
     AnimalEventType EventType, DateTimeOffset EventDate,
@@ -125,3 +139,5 @@ public sealed record CreateEventRequest(
 public sealed record UpdateEventRequest(
     DateTimeOffset EventDate, Guid? WorkerId,
     decimal? Cost, string? Description);
+
+public sealed record AssignBrandRequest(Guid? BrandId, DateTimeOffset? BrandedAt);

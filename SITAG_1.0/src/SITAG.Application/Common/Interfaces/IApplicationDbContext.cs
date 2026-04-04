@@ -20,6 +20,7 @@ public interface IApplicationDbContext
     // ── Farms & Divisions ────────────────────────────────────────────────────
     DbSet<Farm> Farms { get; }
     DbSet<Division> Divisions { get; }
+    DbSet<FarmBrand> FarmBrands { get; }
 
     // ── Animals & Traceability ───────────────────────────────────────────────
     DbSet<Animal> Animals { get; }
