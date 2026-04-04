@@ -2,7 +2,6 @@ namespace SITAG.Application.Farms.Dtos;
 
 public sealed record FarmBrandDto(
     Guid Id,
-    Guid FarmId,
     string Name,
     string? PhotoUrl,
     DateTimeOffset CreatedAt);
@@ -17,31 +16,27 @@ public sealed record FarmDto(
     bool IsOwned,
     DateTimeOffset CreatedAt);
 
+public sealed record FarmOverviewDto(
+    Guid Id,
+    string Name,
+    string? Location,
+    string? FarmType,
+    bool IsOwned,
+    int AnimalCount,
+    int DivisionCount);
+
 public sealed record FarmDetailDto(
     Guid Id,
-    Guid TenantId,
     string Name,
     string? Location,
     decimal? Hectares,
     string? FarmType,
     bool IsOwned,
-    DateTimeOffset CreatedAt,
-    int ActiveAnimals,
-    int SickAnimals,
-    int DivisionCount,
-    int ActiveWorkers);
+    DateTimeOffset CreatedAt);
 
-public sealed record FarmsOverviewDto(
-    IReadOnlyList<FarmDetailDto> Farms,
-    int TotalFarms,
-    int TotalActiveAnimals,
-    int TotalSickAnimals);
-
-public sealed record DivisionDto(
-    Guid Id,
-    Guid FarmId,
+public sealed record UpdateFarmRequest(
     string Name,
-    int? MaxCapacity,
-    bool IsActive,
-    DateTimeOffset CreatedAt,
-    int AnimalCount);
+    string? Location,
+    decimal? Hectares,
+    string? FarmType,
+    bool IsOwned);

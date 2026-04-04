@@ -8,7 +8,7 @@ namespace SITAG.Application.Farms.Commands;
 
 // ── Create ────────────────────────────────────────────────────────────────────
 public sealed record CreateFarmBrandCommand(
-    Guid FarmId, string Name, string? PhotoUrl) : IRequest<FarmBrandDto>;
+    string Name, string? PhotoUrl) : IRequest<FarmBrandDto>;
 
 public sealed class CreateFarmBrandHandler : IRequestHandler<CreateFarmBrandCommand, FarmBrandDto>
 {
@@ -18,21 +18,15 @@ public sealed class CreateFarmBrandHandler : IRequestHandler<CreateFarmBrandComm
 
     public async Task<FarmBrandDto> Handle(CreateFarmBrandCommand r, CancellationToken ct)
     {
-        var farmExists = await _db.Farms
-            .AnyAsync(f => f.Id == r.FarmId && f.TenantId == _user.TenantId && f.DeletedAt == null, ct);
-        if (!farmExists) throw new KeyNotFoundException($"Farm {r.FarmId} not found.");
-
         var brand = new FarmBrand
         {
             TenantId = _user.TenantId,
-            FarmId   = r.FarmId,
             Name     = r.Name.Trim(),
             PhotoUrl = r.PhotoUrl?.Trim(),
         };
         _db.FarmBrands.Add(brand);
         await _db.SaveChangesAsync(ct);
-
-        return new FarmBrandDto(brand.Id, brand.FarmId, brand.Name, brand.PhotoUrl, brand.CreatedAt);
+        return new FarmBrandDto(brand.Id, brand.Name, brand.PhotoUrl, brand.CreatedAt);
     }
 }
 
@@ -55,8 +49,7 @@ public sealed class UpdateFarmBrandHandler : IRequestHandler<UpdateFarmBrandComm
         brand.Name     = r.Name.Trim();
         brand.PhotoUrl = r.PhotoUrl?.Trim();
         await _db.SaveChangesAsync(ct);
-
-        return new FarmBrandDto(brand.Id, brand.FarmId, brand.Name, brand.PhotoUrl, brand.CreatedAt);
+        return new FarmBrandDto(brand.Id, brand.Name, brand.PhotoUrl, brand.CreatedAt);
     }
 }
 

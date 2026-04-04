@@ -14,5 +14,4 @@ public class Farm : TenantEntity
     public Tenant Tenant { get; set; } = null!;
     public ICollection<Division> Divisions { get; set; } = [];
     public ICollection<Animal> Animals { get; set; } = [];
-    public ICollection<FarmBrand> Brands { get; set; } = [];
 }
