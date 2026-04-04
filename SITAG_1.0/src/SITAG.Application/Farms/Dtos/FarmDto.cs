@@ -27,12 +27,17 @@ public sealed record FarmOverviewDto(
 
 public sealed record FarmDetailDto(
     Guid Id,
+    Guid TenantId,
     string Name,
     string? Location,
     decimal? Hectares,
     string? FarmType,
     bool IsOwned,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    int ActiveAnimals,
+    int SickAnimals,
+    int DivisionCount,
+    int WorkerCount);
 
 public sealed record UpdateFarmRequest(
     string Name,
@@ -40,3 +45,18 @@ public sealed record UpdateFarmRequest(
     decimal? Hectares,
     string? FarmType,
     bool IsOwned);
+
+public sealed record DivisionDto(
+    Guid Id,
+    Guid FarmId,
+    string Name,
+    int? MaxCapacity,
+    bool IsActive,
+    DateTimeOffset CreatedAt,
+    int AnimalCount);
+
+public sealed record FarmsOverviewDto(
+    IReadOnlyList<FarmDetailDto> Farms,
+    int TotalFarms,
+    int TotalActiveAnimals,
+    int TotalSickAnimals);

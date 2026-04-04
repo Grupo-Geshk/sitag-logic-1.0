@@ -31,9 +31,6 @@ public class FarmBrandConfiguration : IEntityTypeConfiguration<FarmBrand>
         b.Property(fb => fb.Name).HasMaxLength(255).IsRequired();
         b.Property(fb => fb.PhotoUrl).HasMaxLength(1000);
         b.Property(fb => fb.CreatedAt).IsRequired();
-
-        b.HasOne(fb => fb.Tenant).WithMany()
-            .HasForeignKey(fb => fb.TenantId).OnDelete(DeleteBehavior.Restrict);
     }
 }
 
