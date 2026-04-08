@@ -59,7 +59,7 @@ public sealed class VetServicesController : ApiControllerBase
     [HttpPost("{id:guid}/consumos")]
     public async Task<IActionResult> AddConsumption(Guid id, [FromBody] AddConsumptionRequest body, CancellationToken ct)
     {
-        var result = await Sender.Send(new AddServiceConsumptionCommand(id, body.SupplyId, body.Quantity), ct);
+        var result = await Sender.Send(new AddServiceConsumptionCommand(id, body.SupplyId, body.Quantity, body.LotId), ct);
         return StatusCode(StatusCodes.Status201Created, result);
     }
 }
@@ -69,4 +69,4 @@ public sealed record UpdateVetServiceRequest(
     Guid FarmId, Guid? DivisionId, Guid? WorkerId,
     decimal? Cost, string? Notes, List<Guid> AnimalIds);
 public sealed record CompleteRequest(DateTimeOffset? CompletedDate, decimal? Cost, string? Notes);
-public sealed record AddConsumptionRequest(Guid SupplyId, decimal Quantity);
+public sealed record AddConsumptionRequest(Guid SupplyId, decimal Quantity, Guid? LotId = null);

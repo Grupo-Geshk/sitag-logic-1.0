@@ -16,6 +16,7 @@ public interface IApplicationDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<TenantAuditLog> TenantAuditLogs { get; }
     DbSet<Producer> Producers { get; }
+    DbSet<UserInvite> UserInvites { get; }
 
     // ── Farms & Divisions ────────────────────────────────────────────────────
     DbSet<Farm> Farms { get; }

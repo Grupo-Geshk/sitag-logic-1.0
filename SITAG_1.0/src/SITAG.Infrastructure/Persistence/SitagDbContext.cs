@@ -15,6 +15,7 @@ public sealed class SitagDbContext : DbContext, IApplicationDbContext
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<TenantAuditLog> TenantAuditLogs => Set<TenantAuditLog>();
     public DbSet<Producer> Producers => Set<Producer>();
+    public DbSet<UserInvite> UserInvites => Set<UserInvite>();
 
     // ── Farms & Divisions ─────────────────────────────────────────────────────
     public DbSet<Farm> Farms => Set<Farm>();

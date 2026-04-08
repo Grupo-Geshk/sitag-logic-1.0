@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using SITAG.Application.Admin.Commands;
 using SITAG.Application.Admin.Dtos;
 using SITAG.Application.Admin.Queries;
@@ -11,8 +12,9 @@ namespace SITAG.Api.Controllers;
 
 [Route("admin/tenants")]
 [Authorize(Roles = nameof(UserRole.AdminSistema))]
-public sealed class AdminTenantsController : ApiControllerBase
+public sealed class AdminTenantsController(IConfiguration configuration) : ApiControllerBase
 {
+    private string FrontendUrl => configuration["App:FrontendUrl"] ?? "https://sitag.app";
     /// <summary>
     /// List all tenants with optional search and pagination.
     /// </summary>
@@ -157,6 +159,29 @@ public sealed class AdminTenantsController : ApiControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Create a single-use invite link for a new user to join the tenant.
+    /// The link expires in 72 hours. Validates plan user limits before issuing.
+    /// </summary>
+    [HttpPost("{id:guid}/invites")]
+    [ProducesResponseType(typeof(CreateInviteResult), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CreateInvite(
+        Guid id,
+        [FromBody] CreateInviteRequest body,
+        CancellationToken ct)
+    {
+        var result = await Sender.Send(new CreateInviteCommand(
+            TenantId    : id,
+            Email       : body.Email,
+            ActorUserId : CurrentUserId,
+            BaseUrl     : FrontendUrl), ct);
+
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
 }
 
 // ── Request body records (thin input models, separate from commands) ─────────
@@ -168,3 +193,4 @@ public sealed record UpdateTenantStatusRequest(
 public sealed record UpdateTenantPlanRequest(TenantPlan Plan);
 
 public sealed record LogReminderRequest(string? Note);
+public sealed record CreateInviteRequest(string Email);

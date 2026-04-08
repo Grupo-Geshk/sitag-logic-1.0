@@ -155,7 +155,8 @@ public sealed class AdjustStockHandler : IRequestHandler<AdjustStockCommand, Sup
 
 // ── Add supply consumption to a service (atomic: deduct stock + log movement) ─
 public sealed record AddServiceConsumptionCommand(
-    Guid ServiceId, Guid SupplyId, decimal Quantity) : IRequest<ServiceConsumptionDto>;
+    Guid ServiceId, Guid SupplyId, decimal Quantity,
+    Guid? LotId = null) : IRequest<ServiceConsumptionDto>;
 
 public sealed class AddServiceConsumptionHandler
     : IRequestHandler<AddServiceConsumptionCommand, ServiceConsumptionDto>
@@ -181,6 +182,30 @@ public sealed class AddServiceConsumptionHandler
             throw new InvalidOperationException(
                 $"Insufficient stock for '{supply.Name}'. Available: {supply.CurrentQuantity} {supply.Unit}.");
 
+        // ── Lot-level deduction ───────────────────────────────────────────────
+        SupplyLot? lot = null;
+        if (r.LotId.HasValue)
+        {
+            lot = await _db.SupplyLots
+                .FirstOrDefaultAsync(l => l.Id == r.LotId.Value && l.SupplyId == supply.Id && l.TenantId == tid, ct)
+                ?? throw new KeyNotFoundException($"Lot {r.LotId.Value} not found for supply {supply.Id}.");
+
+            if (lot.Status == SupplyLotStatus.Agotado)
+                throw new InvalidOperationException($"Lot is already depleted.");
+
+            if (lot.CurrentQuantity < r.Quantity)
+                throw new InvalidOperationException(
+                    $"Insufficient quantity in this lot. Available: {lot.CurrentQuantity} {supply.Unit}.");
+
+            lot.CurrentQuantity -= r.Quantity;
+
+            // Status transitions
+            lot.Status = lot.CurrentQuantity <= 0
+                ? SupplyLotStatus.Agotado
+                : SupplyLotStatus.EnUso;
+        }
+
+        // ── Supply aggregate ──────────────────────────────────────────────────
         var prev = supply.CurrentQuantity;
         supply.CurrentQuantity -= r.Quantity;
 
@@ -197,6 +222,7 @@ public sealed class AddServiceConsumptionHandler
         {
             TenantId         = tid,
             SupplyId         = supply.Id,
+            LotId            = lot?.Id,
             MovementType     = SupplyMovementType.Consumption,
             Quantity         = r.Quantity,
             PreviousQuantity = prev,

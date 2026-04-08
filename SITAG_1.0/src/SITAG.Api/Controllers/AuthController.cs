@@ -82,6 +82,24 @@ public sealed class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Public self-registration: creates a new Tenant (Plan=Semilla, free) + Producer + owner User.
+    /// Returns a token pair so the user is logged in immediately.
+    /// Fails with 409 if the email is already in use.
+    /// </summary>
+    [HttpPost("register")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthTokensDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterTenantCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(command, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    /// <summary>
     /// Bootstrap: create the very first AdminSistema user + its Tenant.
     /// Returns a token pair so the admin can start using the API immediately.
     /// Fails with 409 if an admin already exists.
@@ -160,5 +178,39 @@ public sealed class AuthController : ControllerBase
     {
         await _sender.Send(command, cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Validate an invite token and return tenant name + email for pre-filling the form.
+    /// Does NOT consume the token.
+    /// </summary>
+    [HttpGet("invite/{token}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(InviteInfoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ValidateInvite(string token, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new ValidateInviteQuery(Uri.UnescapeDataString(token)), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Accept an invite: complete registration (name, password) and join the tenant.
+    /// Returns a token pair — the user is logged in immediately.
+    /// </summary>
+    [HttpPost("accept-invite")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(AuthTokensDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AcceptInvite(
+        [FromBody] AcceptInviteCommand command,
+        CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(
+            command with { RawToken = Uri.UnescapeDataString(command.RawToken) },
+            cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
 }
