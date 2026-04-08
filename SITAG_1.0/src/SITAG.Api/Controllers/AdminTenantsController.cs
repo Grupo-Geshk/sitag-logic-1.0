@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using SITAG.Application.Admin.Commands;
 using SITAG.Application.Admin.Dtos;
 using SITAG.Application.Admin.Queries;
@@ -12,9 +11,8 @@ namespace SITAG.Api.Controllers;
 
 [Route("admin/tenants")]
 [Authorize(Roles = nameof(UserRole.AdminSistema))]
-public sealed class AdminTenantsController(IConfiguration configuration) : ApiControllerBase
+public sealed class AdminTenantsController : ApiControllerBase
 {
-    private string FrontendUrl => configuration["App:FrontendUrl"] ?? "https://sitag.app";
     /// <summary>
     /// List all tenants with optional search and pagination.
     /// </summary>
@@ -177,8 +175,7 @@ public sealed class AdminTenantsController(IConfiguration configuration) : ApiCo
         var result = await Sender.Send(new CreateInviteCommand(
             TenantId    : id,
             Email       : body.Email,
-            ActorUserId : CurrentUserId,
-            BaseUrl     : FrontendUrl), ct);
+            ActorUserId : CurrentUserId), ct);
 
         return StatusCode(StatusCodes.Status201Created, result);
     }

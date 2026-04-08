@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SITAG.Application.Admin.Commands;
 using SITAG.Application.Admin.Dtos;
 using SITAG.Application.Admin.Queries;
@@ -17,10 +16,8 @@ namespace SITAG.Api.Controllers;
 [Authorize]
 public sealed class TenantUsersController(
     ICurrentUser currentUser,
-    IConfiguration configuration,
     IApplicationDbContext db) : ApiControllerBase
 {
-    private string FrontendUrl => configuration["App:FrontendUrl"] ?? "https://sitag.app";
 
     /// <summary>
     /// List all active users in the current tenant.
@@ -74,8 +71,7 @@ public sealed class TenantUsersController(
         var result = await Sender.Send(new CreateInviteCommand(
             TenantId    : currentUser.TenantId,
             Email       : body.Email,
-            ActorUserId : currentUser.UserId,
-            BaseUrl     : FrontendUrl), ct);
+            ActorUserId : currentUser.UserId), ct);
 
         return StatusCode(StatusCodes.Status201Created, result);
     }

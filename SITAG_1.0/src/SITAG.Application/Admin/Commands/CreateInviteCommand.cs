@@ -9,18 +9,18 @@ using SITAG.Domain.Entities;
 
 namespace SITAG.Application.Admin.Commands;
 
-public sealed record CreateInviteResult(string InviteUrl, DateTimeOffset ExpiresAt);
+public sealed record CreateInviteResult(string Token, DateTimeOffset ExpiresAt);
 
 /// <summary>
-/// Creates a single-use invite link for a new user to join an existing tenant.
+/// Creates a single-use invite token for a new user to join an existing tenant.
 /// Validates plan user limits before issuing the invite.
 /// The raw token is returned once — it is never stored.
+/// The caller (frontend) is responsible for building the full invite URL.
 /// </summary>
 public sealed record CreateInviteCommand(
     Guid TenantId,
     string Email,
-    Guid ActorUserId,
-    string BaseUrl) : IRequest<CreateInviteResult>;
+    Guid ActorUserId) : IRequest<CreateInviteResult>;
 
 public sealed class CreateInviteCommandHandler : IRequestHandler<CreateInviteCommand, CreateInviteResult>
 {
@@ -82,10 +82,9 @@ public sealed class CreateInviteCommandHandler : IRequestHandler<CreateInviteCom
 
         await _db.SaveChangesAsync(ct);
 
-        // URL-safe base64
-        var urlToken  = Uri.EscapeDataString(raw);
-        var inviteUrl = $"{req.BaseUrl.TrimEnd('/')}/invite/{urlToken}";
+        // Return the URL-safe raw token — the frontend builds the full URL
+        var urlToken = Uri.EscapeDataString(raw);
 
-        return new CreateInviteResult(inviteUrl, expiresAt);
+        return new CreateInviteResult(urlToken, expiresAt);
     }
 }
