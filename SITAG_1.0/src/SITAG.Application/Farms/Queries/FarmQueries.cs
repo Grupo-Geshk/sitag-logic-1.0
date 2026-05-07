@@ -16,13 +16,17 @@ public sealed class GetFarmsHandler : IRequestHandler<GetFarmsQuery, IReadOnlyLi
     private readonly ICurrentUser _user;
     public GetFarmsHandler(IApplicationDbContext db, ICurrentUser user) { _db = db; _user = user; }
 
-    public async Task<IReadOnlyList<FarmDto>> Handle(GetFarmsQuery _, CancellationToken ct) =>
-        await _db.Farms
+    public async Task<IReadOnlyList<FarmDto>> Handle(GetFarmsQuery _, CancellationToken ct)
+    {
+        var raw = await _db.Farms
             .AsNoTracking()
             .Where(f => f.TenantId == _user.TenantId && f.DeletedAt == null)
             .OrderBy(f => f.Name)
-            .Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
+            .Select(f => new { f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType })
             .ToListAsync(ct);
+        return raw.Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt,
+            f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada"))).ToList();
+    }
 }
 
 // ── By ID ────────────────────────────────────────────────────────────────────
@@ -36,13 +40,14 @@ public sealed class GetFarmByIdHandler : IRequestHandler<GetFarmByIdQuery, FarmD
 
     public async Task<FarmDto> Handle(GetFarmByIdQuery r, CancellationToken ct)
     {
-        var f = await _db.Farms
+        var raw = await _db.Farms
             .AsNoTracking()
             .Where(f => f.Id == r.FarmId && f.TenantId == _user.TenantId && f.DeletedAt == null)
-            .Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
+            .Select(f => new { f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType })
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException($"Farm {r.FarmId} not found.");
-        return f;
+        return new FarmDto(raw.Id, raw.TenantId, raw.Name, raw.Location, raw.Hectares, raw.FarmType, raw.IsOwned, raw.CreatedAt,
+            raw.OwnershipType ?? (raw.IsOwned ? "Propia" : "Arrendada"));
     }
 }
 
@@ -59,18 +64,21 @@ public sealed class GetFarmsOverviewHandler : IRequestHandler<GetFarmsOverviewQu
     {
         var tid = _user.TenantId;
 
-        var farms = await _db.Farms
+        var raw = await _db.Farms
             .AsNoTracking()
             .Where(f => f.TenantId == tid && f.DeletedAt == null)
-            .Select(f => new FarmDetailDto(
-                f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt,
-                f.Animals.Count(a => a.Status == AnimalStatus.Activo),
-                f.Animals.Count(a => a.Status == AnimalStatus.Activo &&
+            .Select(f => new {
+                f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType,
+                ActiveAnimals = f.Animals.Count(a => a.Status == AnimalStatus.Activo),
+                SickAnimals = f.Animals.Count(a => a.Status == AnimalStatus.Activo &&
                     (a.HealthStatus == AnimalHealthStatus.Enfermo || a.HealthStatus == AnimalHealthStatus.Critico)),
-                f.Divisions.Count(d => d.DeletedAt == null),
-                0, // worker count omitted for perf in overview
-                f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
+                Divisions = f.Divisions.Count(d => d.DeletedAt == null),
+            })
             .ToListAsync(ct);
+        var farms = raw.Select(f => new FarmDetailDto(
+            f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt,
+            f.ActiveAnimals, f.SickAnimals, f.Divisions, 0,
+            f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada"))).ToList();
 
         return new FarmsOverviewDto(farms,
             TotalFarms: farms.Count,
@@ -91,20 +99,22 @@ public sealed class GetFarmDetailHandler : IRequestHandler<GetFarmDetailQuery, F
     public async Task<FarmDetailDto> Handle(GetFarmDetailQuery r, CancellationToken ct)
     {
         var tid = _user.TenantId;
-        var f = await _db.Farms
+        var raw = await _db.Farms
             .AsNoTracking()
             .Where(f => f.Id == r.FarmId && f.TenantId == tid && f.DeletedAt == null)
-            .Select(f => new FarmDetailDto(
-                f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt,
-                f.Animals.Count(a => a.Status == AnimalStatus.Activo),
-                f.Animals.Count(a => a.Status == AnimalStatus.Activo &&
+            .Select(f => new {
+                f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType,
+                ActiveAnimals = f.Animals.Count(a => a.Status == AnimalStatus.Activo),
+                SickAnimals = f.Animals.Count(a => a.Status == AnimalStatus.Activo &&
                     (a.HealthStatus == AnimalHealthStatus.Enfermo || a.HealthStatus == AnimalHealthStatus.Critico)),
-                f.Divisions.Count(d => d.DeletedAt == null),
-                _db.WorkerFarmAssignments.Count(wfa => wfa.FarmId == f.Id && wfa.EndDate == null),
-                f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
+                Divisions = f.Divisions.Count(d => d.DeletedAt == null),
+                Workers = _db.WorkerFarmAssignments.Count(wfa => wfa.FarmId == f.Id && wfa.EndDate == null),
+            })
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException($"Farm {r.FarmId} not found.");
-        return f;
+        return new FarmDetailDto(raw.Id, raw.TenantId, raw.Name, raw.Location, raw.Hectares, raw.FarmType, raw.IsOwned, raw.CreatedAt,
+            raw.ActiveAnimals, raw.SickAnimals, raw.Divisions, raw.Workers,
+            raw.OwnershipType ?? (raw.IsOwned ? "Propia" : "Arrendada"));
     }
 }
 
