@@ -21,7 +21,7 @@ public sealed class GetFarmsHandler : IRequestHandler<GetFarmsQuery, IReadOnlyLi
             .AsNoTracking()
             .Where(f => f.TenantId == _user.TenantId && f.DeletedAt == null)
             .OrderBy(f => f.Name)
-            .Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType != null ? f.OwnershipType : (f.IsOwned ? "Propia" : "Arrendada")))
+            .Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
             .ToListAsync(ct);
 }
 
@@ -39,7 +39,7 @@ public sealed class GetFarmByIdHandler : IRequestHandler<GetFarmByIdQuery, FarmD
         var f = await _db.Farms
             .AsNoTracking()
             .Where(f => f.Id == r.FarmId && f.TenantId == _user.TenantId && f.DeletedAt == null)
-            .Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType != null ? f.OwnershipType : (f.IsOwned ? "Propia" : "Arrendada")))
+            .Select(f => new FarmDto(f.Id, f.TenantId, f.Name, f.Location, f.Hectares, f.FarmType, f.IsOwned, f.CreatedAt, f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException($"Farm {r.FarmId} not found.");
         return f;
@@ -69,7 +69,7 @@ public sealed class GetFarmsOverviewHandler : IRequestHandler<GetFarmsOverviewQu
                     (a.HealthStatus == AnimalHealthStatus.Enfermo || a.HealthStatus == AnimalHealthStatus.Critico)),
                 f.Divisions.Count(d => d.DeletedAt == null),
                 0, // worker count omitted for perf in overview
-                f.OwnershipType != null ? f.OwnershipType : (f.IsOwned ? "Propia" : "Arrendada")))
+                f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
             .ToListAsync(ct);
 
         return new FarmsOverviewDto(farms,
@@ -101,7 +101,7 @@ public sealed class GetFarmDetailHandler : IRequestHandler<GetFarmDetailQuery, F
                     (a.HealthStatus == AnimalHealthStatus.Enfermo || a.HealthStatus == AnimalHealthStatus.Critico)),
                 f.Divisions.Count(d => d.DeletedAt == null),
                 _db.WorkerFarmAssignments.Count(wfa => wfa.FarmId == f.Id && wfa.EndDate == null),
-                f.OwnershipType != null ? f.OwnershipType : (f.IsOwned ? "Propia" : "Arrendada")))
+                f.OwnershipType ?? (f.IsOwned ? "Propia" : "Arrendada")))
             .FirstOrDefaultAsync(ct)
             ?? throw new KeyNotFoundException($"Farm {r.FarmId} not found.");
         return f;
