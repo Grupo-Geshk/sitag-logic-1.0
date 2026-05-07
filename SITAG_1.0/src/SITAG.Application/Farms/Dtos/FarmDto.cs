@@ -14,7 +14,8 @@ public sealed record FarmDto(
     decimal? Hectares,
     string? FarmType,
     bool IsOwned,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    string OwnershipType);
 
 public sealed record FarmOverviewDto(
     Guid Id,
@@ -23,7 +24,8 @@ public sealed record FarmOverviewDto(
     string? FarmType,
     bool IsOwned,
     int AnimalCount,
-    int DivisionCount);
+    int DivisionCount,
+    string OwnershipType);
 
 public sealed record FarmDetailDto(
     Guid Id,
@@ -37,14 +39,16 @@ public sealed record FarmDetailDto(
     int ActiveAnimals,
     int SickAnimals,
     int DivisionCount,
-    int WorkerCount);
+    int WorkerCount,
+    string OwnershipType);
 
 public sealed record UpdateFarmRequest(
     string Name,
     string? Location,
     decimal? Hectares,
     string? FarmType,
-    bool IsOwned);
+    bool IsOwned,
+    string? OwnershipType);
 
 public sealed record DivisionDto(
     Guid Id,

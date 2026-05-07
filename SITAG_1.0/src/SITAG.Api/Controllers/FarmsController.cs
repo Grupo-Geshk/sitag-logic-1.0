@@ -35,7 +35,7 @@ public sealed class FarmsController : ApiControllerBase
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateFarmRequest body, CancellationToken ct) =>
-        Ok(await Sender.Send(new UpdateFarmCommand(id, body.Name, body.Location, body.Hectares, body.FarmType, body.IsOwned), ct));
+        Ok(await Sender.Send(new UpdateFarmCommand(id, body.Name, body.Location, body.Hectares, body.FarmType, body.IsOwned, body.OwnershipType), ct));
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
@@ -72,6 +72,6 @@ public sealed class FarmsController : ApiControllerBase
     }
 }
 
-public sealed record UpdateFarmRequest(string Name, string? Location, decimal? Hectares, string? FarmType, bool IsOwned);
+public sealed record UpdateFarmRequest(string Name, string? Location, decimal? Hectares, string? FarmType, bool IsOwned, string? OwnershipType = null);
 public sealed record CreateDivisionRequest(string Name, int? MaxCapacity);
 public sealed record UpdateDivisionRequest(string Name, int? MaxCapacity);

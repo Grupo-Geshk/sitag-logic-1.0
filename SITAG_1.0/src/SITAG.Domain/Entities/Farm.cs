@@ -9,6 +9,7 @@ public class Farm : TenantEntity
     public decimal? Hectares { get; set; }
     public string? FarmType { get; set; }   // "Ganadería" | "Mixta" | "Engorde"
     public bool IsOwned { get; set; } = true;
+    public string? OwnershipType { get; set; }  // "Propia" | "Arrendada" | "Alquilada" | "Administrando"
     public DateTimeOffset? DeletedAt { get; set; }
 
     public Tenant Tenant { get; set; } = null!;
