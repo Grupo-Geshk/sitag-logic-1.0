@@ -48,5 +48,8 @@ public interface IApplicationDbContext
     DbSet<TransactionCategory> TransactionCategories { get; }
     DbSet<EconomyTransaction> EconomyTransactions { get; }
 
+    // ── Import ────────────────────────────────────────────────────────────────
+    DbSet<ImportDraft> ImportDrafts { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

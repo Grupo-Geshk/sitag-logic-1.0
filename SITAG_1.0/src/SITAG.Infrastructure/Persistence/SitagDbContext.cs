@@ -47,6 +47,9 @@ public sealed class SitagDbContext : DbContext, IApplicationDbContext
     public DbSet<TransactionCategory> TransactionCategories => Set<TransactionCategory>();
     public DbSet<EconomyTransaction> EconomyTransactions => Set<EconomyTransaction>();
 
+    // ── Import ────────────────────────────────────────────────────────────────
+    public DbSet<ImportDraft> ImportDrafts => Set<ImportDraft>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
